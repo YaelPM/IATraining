@@ -60,27 +60,6 @@ def AlgebraLinealSolve(eta, iteraciones):
     Graficar(Iteraciones, ResultadosObtenidosPorIteracion)
 
 
-def tensorflowSolve():
-    print('solve')
-    dataset = pd.read_csv('193259.csv')
-    x1 = dataset.iloc[:, 0].values
-    x2 = dataset.iloc[:, 1].values
-    x3 = dataset.iloc[:, 2].values
-    print(x1)
-
-    # model = tf.keras.models.Sequential([
-    #     tf.keras.layers.Flatten(input_shape=(28, 28)),
-    #     tf.keras.layers.Dense(128, activation='relu'),
-    #     tf.keras.layers.Dropout(0.2),
-    #     tf.keras.layers.Dense(10, activation='softmax')
-    # ])
-    # model.compile(optimizer='adam',
-    #               loss='sparse_categorical_crossentropy',
-    #               metrics=['accuracy'])
-    # model.fit(DatosDeEntradaCSV, DatosDeResultadosCSV, epochs=10)
-    # print(model.evaluate(DatosDeEntradaCSV,  DatosDeResultadosCSV, verbose=2))
-
-
 root = Tk()
 root.title('Entrenamiento de neurona')
 root.geometry('500x500')
