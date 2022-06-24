@@ -14,52 +14,71 @@ from matplotlib import pyplot
 print(tf.__version__)
 
 
-def Graficar(valoresX, valoresY):
-    print(valoresX)
-    print(valoresY)
-    fig, ax = pyplot.subplots()
-    ax.set_title("Grafica")
-    ax.plot(valoresX, valoresY)
-    ax.set_xlabel("x")
-    ax.set_ylabel("y")
+def Graficar(Iteraciones, Resultados):
+    fig, grafica = pyplot.subplots()
+    grafica.set_title("Grafica")
+    grafica.plot(Iteraciones, Resultados)
+    grafica.set_xlabel("x")
+    grafica.set_ylabel("y")
     pyplot.savefig("Grafica")
     pyplot.close()
 
 
 def AlgebraLinealSolve(eta, iteraciones):
-    datosX = []
-    datosY = []
-    W = [0.1, 0.3, 0.5, 0.2]
-    X = pd.read_csv('193259.csv', header=None, skiprows=1, names=[
+    Iteraciones = []
+    ResultadosObtenidosPorIteracion = []
+    PesosDeEntradaALaNeurona = [0.1, 0.3, 0.5, 0.2]
+    #leyendo información del archivo csv
+    DatosDeEntradaCSV = pd.read_csv('193259.csv', header=None, skiprows=1, names=[
         'x1', 'x2', 'x3', 'y'], usecols=['x1', 'x2', 'x3'])
-    Y = pd.read_csv('193259.csv', header=None, skiprows=1,
-                    names=['x1', 'x2', 'x3', 'y'], usecols=['y'])
-    N = []
-    N.append(float(eta))
-    X = np.matrix(X)
-    X = np.c_[np.ones(100), X]
-    N = np.matrix(N)
-    Y = np.matrix(Y)
+    DatosDeResultadosCSV = pd.read_csv('193259.csv', header=None, skiprows=1,
+                                       names=['x1', 'x2', 'x3', 'y'], usecols=['y'])
+    ValorDeEta = []
+    ValorDeEta.append(float(eta))
+    #Creando matrices
+    DatosDeEntradaCSV = np.matrix(DatosDeEntradaCSV)
+    DatosDeEntradaCSV = np.c_[np.ones(100), DatosDeEntradaCSV]
+    ValorDeEta = np.matrix(ValorDeEta)
+    DatosDeResultadosCSV = np.matrix(DatosDeResultadosCSV)
 
-    for k in range(int(iteraciones)):
-        W = np.matrix(W).transpose()
-        U = np.dot(X, W)
-        E = Y-U
-        E = np.matrix(E).transpose()
-        EX = np.dot(E, X)
-        AW = np.dot(N, EX)
-        W = np.matrix(W).transpose()
-        W = W+AW
-        E2 = np.square(E)
-        E2Sum = np.sum(E2)
-        EV = np.sqrt(E2Sum)
-        datosY.append(math.ceil(EV))
-        datosX.append(k)
-        print(math.ceil(EV))
+    for iteracion in range(int(iteraciones)):
+        PesosDeEntradaALaNeurona = np.matrix(PesosDeEntradaALaNeurona).transpose()
+        MultiplicacionMatricialDeDatosDeEntradacsvConLosPesos = np.dot(DatosDeEntradaCSV, PesosDeEntradaALaNeurona)
+        DiferenciaCalculada = DatosDeResultadosCSV-MultiplicacionMatricialDeDatosDeEntradacsvConLosPesos
+        DiferenciaCalculada = np.matrix(DiferenciaCalculada).transpose()
+        MultiplicacionMatricialDeDiferenciaYDatosDecsv = np.dot(DiferenciaCalculada, DatosDeEntradaCSV)
+        PesosFinales = np.dot(ValorDeEta, MultiplicacionMatricialDeDiferenciaYDatosDecsv)
+        PesosDeEntradaALaNeurona = np.matrix(PesosDeEntradaALaNeurona).transpose()
+        PesosDeEntradaALaNeurona = PesosDeEntradaALaNeurona+PesosFinales
+        CuadradadosDeMatrizDeLaDiferencia = np.square(DiferenciaCalculada)
+        Sumatoria = np.sum(CuadradadosDeMatrizDeLaDiferencia)
+        Resultado = np.sqrt(Sumatoria)
+        ResultadosObtenidosPorIteracion.append(math.ceil(Resultado))
+        Iteraciones.append(iteracion)
+        print(math.ceil(Resultado))
 
-    Graficar(datosX, datosY)
+    Graficar(Iteraciones, ResultadosObtenidosPorIteracion)
 
 
+def tensorflowSolve():
+    print('solve')
+    dataset = pd.read_csv('193259.csv')
+    x1 = dataset.iloc[:, 0].values
+    x2 = dataset.iloc[:, 1].values
+    x3 = dataset.iloc[:, 2].values
+    print(x1)
+
+    # model = tf.keras.models.Sequential([
+    #     tf.keras.layers.Flatten(input_shape=(28, 28)),
+    #     tf.keras.layers.Dense(128, activation='relu'),
+    #     tf.keras.layers.Dropout(0.2),
+    #     tf.keras.layers.Dense(10, activation='softmax')
+    # ])
+    # model.compile(optimizer='adam',
+    #               loss='sparse_categorical_crossentropy',
+    #               metrics=['accuracy'])
+    # model.fit(DatosDeEntradaCSV, DatosDeResultadosCSV, epochs=10)
+    # print(model.evaluate(DatosDeEntradaCSV,  DatosDeResultadosCSV, verbose=2))
 
 
 root = Tk()
