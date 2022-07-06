@@ -4,12 +4,12 @@ import math
 from random import *
 import pandas as pd
 
-# TensorFlow y tf.keras
+# TensorFlow valoresDeSalida tf.keras
 import tensorflow as tf
 
 # Librerias de ayuda
 import numpy as np
-from matplotlib import pyplot
+from matplotlib import pyplot, units
 
 
 def Graficar(Iteraciones, Resultados):
@@ -17,7 +17,7 @@ def Graficar(Iteraciones, Resultados):
     grafica.set_title("Grafica")
     grafica.plot(Iteraciones, Resultados)
     grafica.set_xlabel("Iteraciones")
-    grafica.set_ylabel("y")
+    grafica.set_ylabel("valoresDeSalida")
     pyplot.savefig("Grafica")
     pyplot.close()
 
@@ -31,9 +31,9 @@ def AlgebraLinealSolve(eta, iteraciones):
     print('Valores aleatorios: ', PesosDeEntradaALaNeurona)
     # leyendo información del archivo csv
     DatosDeEntradaCSV = pd.read_csv('193259.csv', header=None, skiprows=1, names=[
-        'x1', 'x2', 'x3', 'y'], usecols=['x1', 'x2', 'x3'])
+        'x1', 'x2', 'x3', 'valoresDeSalida'], usecols=['x1', 'x2', 'x3'])
     DatosDeResultadosCSV = pd.read_csv('193259.csv', header=None, skiprows=1,
-                                       names=['x1', 'x2', 'x3', 'y'], usecols=['y'])
+                                       names=['x1', 'x2', 'x3', 'valoresDeSalida'], usecols=['valoresDeSalida'])
     ValorDeEta = []
     ValorDeEta.append(float(eta))
     # Creando matrices
@@ -68,35 +68,39 @@ def AlgebraLinealSolve(eta, iteraciones):
     Graficar(Iteraciones, ResultadosObtenidosPorIteracion)
 
 
-def TensorFlowSolve():
+def TensorFlowSolve(eta, iteraciones):
     dataset = pd.read_csv('193259.csv')
-    x = dataset.iloc[:, 0:3].values
-    y = dataset.iloc[:, 3].values
-    print('x= ', len(x), "\n", x)
-    print('y= ', len(y), "\n", y)
+    valoresDeEntrada = dataset.iloc[:, 0:3].values
+    valoresDeSalida = dataset.iloc[:, 3].values
+    print('valoresDeEntrada= ', len(valoresDeEntrada), "\n", valoresDeEntrada)
+    print('valoresDeSalida= ', len(valoresDeSalida), "\n", valoresDeSalida)
 
-    capa = tf.keras.layers.Dense(3, activation="sigmoid")
+    capa = tf.keras.layers.Dense(units=1 ,input_dim=3)
     modelo = tf.keras.Sequential([capa])
     modelo.compile(
-        optimizer=tf.keras.optimizers.Adam(0.0000001),
+        optimizer=tf.keras.optimizers.Adam(eta),
         loss='mean_squared_error'
     )
     print('comenzando entrenamiento...')
-    historial = modelo.fit(x, y, epochs=100)
+    historial = modelo.fit(valoresDeEntrada, valoresDeSalida, epochs=iteraciones)
     print('Entrenado\n')
 
-    # resultado= modelo.predict([-18, 10, -42])
-    # print("Resultado: ", resultado)
+    resultado= modelo.predict(valoresDeEntrada)
 
     pyplot.xlabel("# epoca")
     pyplot.ylabel("Magnitud de perdida")
     pyplot.plot(historial.history["loss"])
     pyplot.show()
 
+    resultado_df = pd.DataFrame(data= resultado, columns= ["Y Calculada"])
+    print(resultado_df)
+    resultado_df.to_csv("./output.csv")
+    print("pesos")
+    print(capa.get_weights())
 
 root = Tk()
 root.title('Entrenamiento de neurona')
-root.geometry('500x500')
+root.geometry('700x500')
 
 eta = Entry(root)
 eta.grid(row=0, column=0)
@@ -107,10 +111,10 @@ iteraciones.grid(row=0, column=1)
 labelIteraciones = Label(root, text="Iteraciones").grid(row=1, column=1)
 
 
-limpiar = Button(root, text="AlgebraLinealSolve",
-                 command=lambda: TensorFlowSolve()).grid(row=0, column=2)
+limpiar = Button(root, text="Solución con tensorflow",
+                 command=lambda: TensorFlowSolve(float(eta.get()), int(iteraciones.get()))).grid(row=0, column=2)
 
-# limpiar = Button(root, text="AlgebraLinealSolve",
-#                  command=lambda: AlgebraLinealSolve(eta.get(), iteraciones.get())).grid(row=0, column=2)
+limpiar = Button(root, text="Solución con algebra lineal",
+                 command=lambda: AlgebraLinealSolve(eta.get(), iteraciones.get())).grid(row=0, column=3)
 
 root.mainloop()
